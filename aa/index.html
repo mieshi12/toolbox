@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f1115">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>AA 分账</title>
+<style>
+:root{--bg:#0f1115;--card:#16181d;--card2:#1c1f26;--line:#23262e;--fg:#e8eaed;
+  --dim:#8b919b;--dim2:#4a4f58;--blue:#4d6bfe;--green:#3fb950;--red:#f85149;--gold:#e3b341}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei UI","PingFang SC",sans-serif}
+.app{max-width:560px;margin:0 auto;padding:0 14px calc(28px + env(safe-area-inset-bottom))}
+header{display:flex;align-items:center;gap:10px;padding:calc(14px + env(safe-area-inset-top)) 0 10px}
+h1{margin:0;font-size:17px;font-weight:600}
+header .sum{margin-left:auto;font-size:12px;color:var(--dim)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px;margin-bottom:10px}
+.card .h{font-size:11.5px;color:var(--dim2);margin-bottom:9px;letter-spacing:.04em}
+input,select{background:var(--card2);border:1px solid var(--line);color:var(--fg);border-radius:10px;
+  padding:11px 12px;font-size:14px;font-family:inherit;outline:none;min-width:0;width:100%}
+.row{display:flex;gap:8px}
+.row input{flex:1}
+.btn{background:var(--blue);border:0;color:#fff;border-radius:10px;padding:11px 16px;
+  font-size:14px;font-family:inherit;white-space:nowrap}
+.btn.ghost{background:var(--card2);border:1px solid var(--line);color:var(--fg)}
+.btn.mini{padding:8px 12px;font-size:12.5px}
+.members{display:flex;flex-wrap:wrap;gap:7px}
+.members .m{background:var(--card2);border:1px solid var(--line);border-radius:99px;padding:6px 10px 6px 12px;
+  font-size:13px;display:inline-flex;gap:7px;align-items:center}
+.members .m i{color:var(--dim2);font-style:normal}
+.items .it{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #1c1f26}
+.items .it:last-child{border-bottom:0}
+.items .it .who{font-size:13.5px}
+.items .it .who small{display:block;font-size:10.5px;color:var(--dim2);margin-top:3px}
+.items .it .amt{margin-left:auto;font-size:15px;font-variant-numeric:tabular-nums}
+.items .it .del{color:var(--dim2);padding:0 4px;font-size:16px}
+.empty{font-size:12.5px;color:var(--dim2);text-align:center;padding:18px 0}
+.people{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+.people label{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#cfd4dc;
+  background:var(--card2);border:1px solid var(--line);border-radius:99px;padding:7px 11px}
+.people input[type=checkbox]{width:auto;padding:0;margin:0;accent-color:var(--blue)}
+.settle .s{display:flex;align-items:center;gap:8px;padding:11px 0;border-bottom:1px solid #1c1f26;font-size:14px}
+.settle .s:last-child{border-bottom:0}
+.settle .s b{color:var(--gold);font-weight:600}
+.settle .s .arrow{color:var(--dim2)}
+.settle .s .n{margin-left:auto;color:var(--green);font-variant-numeric:tabular-nums}
+.net{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;color:var(--dim)}
+.net b{color:#dfe3ea;font-weight:500;font-variant-numeric:tabular-nums}
+.net .pos{color:var(--green)}
+.net .neg{color:var(--red)}
+.foot{margin-top:18px;font-size:11px;color:var(--dim2);line-height:1.9;text-align:center}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>AA 分账</h1>
+    <span class="sum" id="sum">0 笔 · ¥0</span>
+  </header>
+
+  <div class="card">
+    <div class="h">① 参与的人</div>
+    <div class="row">
+      <input id="mIn" placeholder="名字，回车添加" autocomplete="off">
+      <button class="btn mini" id="mAdd">添加</button>
+    </div>
+    <div class="members" id="members" style="margin-top:10px"></div>
+  </div>
+
+  <div class="card">
+    <div class="h">② 记一笔</div>
+    <div class="row">
+      <input id="amt" type="number" inputmode="decimal" placeholder="金额">
+      <select id="payer" style="max-width:44%"></select>
+    </div>
+    <div class="people" id="parts"></div>
+    <div class="row" style="margin-top:10px">
+      <input id="note" placeholder="备注（选填）：午饭 / 打车">
+      <button class="btn" id="addItem">记账</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="h">③ 明细</div>
+    <div class="items" id="items"></div>
+  </div>
+
+  <div class="card">
+    <div class="h">④ 谁该给谁多少</div>
+    <div class="settle" id="settle"></div>
+  </div>
+
+  <div class="row">
+    <button class="btn ghost" id="copy">复制结果</button>
+    <button class="btn ghost" id="clear">清空重来</button>
+  </div>
+
+  <div class="foot">数据只存本机 · 不联网也能用 · 关掉再打开还在</div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const KEY = 'aa_ledger_v1';
+let st = { members: [], items: [] };
+try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && s.members) st = s; } catch (e) {}
+let partSel = {};   // 谁参与：名字 -> 是否勾选（新人默认参与）
+
+function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
+function money(n) { return '¥' + (Math.round(n * 100) / 100).toFixed(2); }
+
+function addMember() {
+  const v = $('#mIn').value.trim();
+  if (!v) return;
+  if (st.members.indexOf(v) < 0) st.members.push(v);
+  $('#mIn').value = '';
+  save(); render();
+}
+
+function delMember(name) {
+  st.members = st.members.filter(m => m !== name);
+  delete partSel[name];
+  st.items = st.items.filter(it => it.payer !== name);
+  st.items.forEach(it => { it.parts = it.parts.filter(p => p !== name); });
+  st.items = st.items.filter(it => it.parts.length > 0);
+  save(); render();
+}
+
+function chosenParts() {
+  return Array.from(document.querySelectorAll('#parts input:checked')).map(x => x.value);
+}
+
+function addItem() {
+  const amt = parseFloat($('#amt').value);
+  const payer = $('#payer').value;
+  const parts = chosenParts();
+  if (!amt || amt <= 0) { alert('金额填一下'); return; }
+  if (!payer) { alert('先加人'); return; }
+  if (!parts.length) { alert('勾一下谁参与'); return; }
+  st.items.push({ amt: Math.round(amt * 100) / 100, payer: payer, parts: parts, note: $('#note').value.trim() });
+  $('#amt').value = ''; $('#note').value = '';
+  save(); render();
+}
+
+function delItem(i) { st.items.splice(i, 1); save(); render(); }
+
+function compute() {
+  const paid = {}, share = {};
+  st.members.forEach(m => { paid[m] = 0; share[m] = 0; });
+  st.items.forEach(it => {
+    paid[it.payer] = (paid[it.payer] || 0) + it.amt;
+    const per = it.amt / it.parts.length;
+    it.parts.forEach(p => { share[p] = (share[p] || 0) + per; });
+  });
+  const net = st.members.map(m => ({ name: m, v: (paid[m] || 0) - (share[m] || 0) }));
+  return { paid, share, net };
+}
+
+function settle(net) {
+  const cred = net.filter(x => x.v > 0.005).map(x => ({ n: x.name, v: x.v })).sort((a, b) => b.v - a.v);
+  const debt = net.filter(x => x.v < -0.005).map(x => ({ n: x.name, v: -x.v })).sort((a, b) => b.v - a.v);
+  const out = [];
+  let i = 0, j = 0;
+  while (i < debt.length && j < cred.length) {
+    const t = Math.min(debt[i].v, cred[j].v);
+    if (t > 0.004) out.push({ from: debt[i].n, to: cred[j].n, amt: t });
+    debt[i].v -= t; cred[j].v -= t;
+    if (debt[i].v < 0.005) i++;
+    if (cred[j].v < 0.005) j++;
+  }
+  return out;
+}
+
+function render() {
+  // 成员
+  const mb = $('#members');
+  mb.innerHTML = '';
+  if (!st.members.length) mb.innerHTML = '<span style="font-size:12px;color:#4a4f58">还没有人，上面加</span>';
+  st.members.forEach(m => {
+    const d = document.createElement('span');
+    d.className = 'm';
+    d.innerHTML = m + '<i>×</i>';
+    d.querySelector('i').onclick = () => delMember(m);
+    mb.appendChild(d);
+  });
+
+  // 付款人
+  const sel = $('#payer');
+  const cur = sel.value;
+  sel.innerHTML = '';
+  st.members.forEach(m => {
+    const o = document.createElement('option');
+    o.value = m; o.textContent = m;
+    sel.appendChild(o);
+  });
+  if (cur && st.members.indexOf(cur) >= 0) sel.value = cur;
+
+  // 参与人复选框（新人默认参与，用户取消后保持）
+  const box = $('#parts');
+  box.innerHTML = '';
+  st.members.forEach(m => {
+    if (!(m in partSel)) partSel[m] = true;
+    const lab = document.createElement('label');
+    const cb = document.createElement('input');
+    cb.type = 'checkbox'; cb.value = m;
+    cb.checked = partSel[m];
+    cb.onchange = () => { partSel[m] = cb.checked; };
+    lab.appendChild(cb);
+    lab.appendChild(document.createTextNode(m));
+    box.appendChild(lab);
+  });
+
+  // 明细
+  const it = $('#items');
+  it.innerHTML = '';
+  if (!st.items.length) it.innerHTML = '<div class="empty">还没有账</div>';
+  st.items.forEach((x, i) => {
+    const d = document.createElement('div');
+    d.className = 'it';
+    const who = document.createElement('div');
+    who.className = 'who';
+    who.innerHTML = x.payer + ' 付' + (x.note ? '<small>' + x.note + ' · ' + x.parts.length + ' 人分摊</small>' : '<small>' + x.parts.length + ' 人分摊</small>');
+    const amt = document.createElement('div');
+    amt.className = 'amt';
+    amt.textContent = money(x.amt);
+    const del = document.createElement('div');
+    del.className = 'del'; del.textContent = '×';
+    del.onclick = () => delItem(i);
+    d.appendChild(who); d.appendChild(amt); d.appendChild(del);
+    it.appendChild(d);
+  });
+
+  // 结算
+  const r = compute();
+  const total = st.items.reduce((s, x) => s + x.amt, 0);
+  $('#sum').textContent = st.items.length + ' 笔 · ' + money(total);
+
+  const stl = $('#settle');
+  stl.innerHTML = '';
+  if (!st.items.length) {
+    stl.innerHTML = '<div class="empty">记完账这里自动出结果</div>';
+  } else {
+    const tr = settle(r.net);
+    if (!tr.length) {
+      stl.innerHTML = '<div class="empty">已经平了，不用转</div>';
+    }
+    tr.forEach(t => {
+      const d = document.createElement('div');
+      d.className = 's';
+      d.innerHTML = '<span>' + t.from + '</span><span class="arrow">→</span><b>' + t.to + '</b><span class="n">' + money(t.amt) + '</span>';
+      stl.appendChild(d);
+    });
+  }
+
+  // 每人净额
+  const netBox = document.createElement('div');
+  netBox.style.marginTop = '6px';
+  r.net.forEach(n => {
+    const d = document.createElement('div');
+    d.className = 'net';
+    const cls = n.v > 0.005 ? 'pos' : (n.v < -0.005 ? 'neg' : '');
+    d.innerHTML = '<span>' + n.name + '</span><b class="' + cls + '">' + (n.v > 0.005 ? '应收 ' + money(n.v) : (n.v < -0.005 ? '应付 ' + money(-n.v) : '平')) + '</b>';
+    netBox.appendChild(d);
+  });
+  if (st.items.length) stl.appendChild(netBox);
+}
+
+$('#mAdd').onclick = addMember;
+$('#mIn').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); addMember(); } });
+$('#addItem').onclick = addItem;
+$('#clear').onclick = () => {
+  if (!confirm('清空所有人和账？')) return;
+  st = { members: [], items: [] };
+  save(); render();
+};
+$('#copy').onclick = async () => {
+  const r = compute();
+  const tr = settle(r.net);
+  const total = st.items.reduce((s, x) => s + x.amt, 0);
+  let txt = 'AA 分账 · 合计 ' + money(total) + '\n';
+  st.items.forEach(x => { txt += '· ' + x.payer + ' 付 ' + money(x.amt) + (x.note ? '（' + x.note + '）' : '') + '，' + x.parts.length + ' 人分摊\n'; });
+  txt += '\n结算：\n';
+  if (!tr.length) txt += '已平，不用转\n';
+  tr.forEach(t => { txt += t.from + ' → ' + t.to + '  ' + money(t.amt) + '\n'; });
+  try { await navigator.clipboard.writeText(txt); alert('已复制，直接粘贴到群里'); }
+  catch (e) {
+    const ta = document.createElement('textarea');
+    ta.value = txt; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); ta.remove(); alert('已复制');
+  }
+};
+
+render();
+</script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/tools/sw.js").catch(function(){});});}</script></body>
+</html>
