@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f1115">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>待办清单 · 离线版</title>
+<style>
+:root{
+  --bg:#0f1115;--card:#16181d;--line:#23262e;--fg:#e8eaed;--dim:#7d838d;--dim2:#4a4f58;
+  --blue:#4d6bfe;--green:#3fb950;--red:#f85149;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei UI","PingFang SC",sans-serif;
+  overscroll-behavior:none}
+.app{display:flex;flex-direction:column;height:100%;max-width:640px;margin:0 auto}
+header{padding:calc(12px + env(safe-area-inset-top)) 14px 10px;border-bottom:1px solid var(--line);
+  display:flex;align-items:baseline;gap:10px}
+header h1{margin:0;font-size:16px;font-weight:600}
+header .stat{font-size:11px;color:var(--dim2);margin-left:auto}
+.addbar{display:flex;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.addbar input{flex:1;background:var(--card);border:1px solid var(--line);color:var(--fg);
+  border-radius:12px;padding:12px 13px;font-size:15px;font-family:inherit;outline:none;min-width:0}
+.addbar button{background:var(--blue);color:#fff;border:0;border-radius:12px;padding:12px 18px;
+  font-size:15px;font-family:inherit;flex:0 0 auto}
+.addbar button:active{opacity:.75}
+.list{flex:1;overflow-y:auto;padding:10px 14px calc(14px + env(safe-area-inset-bottom));
+  -webkit-overflow-scrolling:touch}
+.row{display:flex;align-items:flex-start;gap:11px;background:var(--card);border:1px solid var(--line);
+  border-radius:13px;padding:13px 12px;margin-bottom:9px}
+.row .box{width:20px;height:20px;border:1.6px solid var(--dim);border-radius:6px;flex:0 0 auto;
+  margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff}
+.row.done .box{background:var(--green);border-color:var(--green)}
+.row .tx{flex:1;font-size:15px;line-height:1.55;word-break:break-word}
+.row.done .tx{color:var(--dim2);text-decoration:line-through}
+.row .del{color:var(--dim2);font-size:16px;padding:0 4px;flex:0 0 auto}
+.row .del:active{color:var(--red)}
+.empty{color:var(--dim2);font-size:13px;text-align:center;padding:60px 20px;line-height:2}
+footer{border-top:1px solid var(--line);padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+  display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+footer button{background:var(--card);border:1px solid var(--line);color:var(--fg);border-radius:10px;
+  padding:9px 13px;font-size:12.5px;font-family:inherit}
+footer button:active{opacity:.7}
+footer .hint{font-size:10.5px;color:var(--dim2);margin-left:auto}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>待办清单</h1>
+    <span class="stat" id="stat">—</span>
+  </header>
+
+  <div class="addbar">
+    <input id="inp" placeholder="写一件要做的事，回车添加" autocomplete="off">
+    <button id="btnAdd">添加</button>
+  </div>
+
+  <div class="list" id="list"></div>
+
+  <footer>
+    <button id="btnExport">导出备份</button>
+    <button id="btnImport">导入备份</button>
+    <button id="btnCopy">复制文本</button>
+    <span class="hint" id="hint">数据只存本机</span>
+  </footer>
+</div>
+
+<input type="file" id="file" accept=".json,application/json" style="display:none">
+
+<script>
+const KEY = "offline_todo_v1";
+const $ = s => document.querySelector(s);
+
+let items = [];
+try { items = JSON.parse(localStorage.getItem(KEY) || "[]") || []; } catch (e) { items = []; }
+
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(items)); } catch (e) {}
+}
+
+function render() {
+  const box = $("#list");
+  box.innerHTML = "";
+  if (!items.length) {
+    box.innerHTML = '<div class="empty">还没有事情<br>上面输入框写一条就行</div>';
+  }
+  items.forEach((it, i) => {
+    const row = document.createElement("div");
+    row.className = "row" + (it.done ? " done" : "");
+
+    const cb = document.createElement("div");
+    cb.className = "box";
+    cb.textContent = it.done ? "✓" : "";
+    cb.onclick = () => { it.done = !it.done; save(); render(); };
+
+    const tx = document.createElement("div");
+    tx.className = "tx";
+    tx.textContent = it.text;
+
+    const del = document.createElement("div");
+    del.className = "del";
+    del.textContent = "×";
+    del.onclick = () => { items.splice(i, 1); save(); render(); };
+
+    row.appendChild(cb); row.appendChild(tx); row.appendChild(del);
+    box.appendChild(row);
+  });
+  const left = items.filter(x => !x.done).length;
+  $("#stat").textContent = items.length ? (left + " 项未完成 / 共 " + items.length) : "—";
+}
+
+function add() {
+  const v = $("#inp").value.trim();
+  if (!v) return;
+  items.unshift({ text: v, done: false, ts: Date.now() });
+  $("#inp").value = "";
+  save(); render();
+}
+
+$("#btnAdd").onclick = add;
+$("#inp").addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); add(); }
+});
+
+$("#btnExport").onclick = () => {
+  const blob = new Blob([JSON.stringify(items, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "todo-backup-" + new Date().toISOString().slice(0, 10) + ".json";
+  a.click();
+  $("#hint").textContent = "已导出";
+};
+
+$("#btnImport").onclick = () => $("#file").click();
+$("#file").onchange = ev => {
+  const f = ev.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const arr = JSON.parse(r.result);
+      if (Array.isArray(arr)) {
+        items = arr.map(x => ({ text: String(x.text || x), done: !!x.done, ts: x.ts || Date.now() }));
+        save(); render();
+        $("#hint").textContent = "已导入 " + items.length + " 条";
+      }
+    } catch (e) { $("#hint").textContent = "文件读不了"; }
+  };
+  r.readAsText(f);
+  ev.target.value = "";
+};
+
+$("#btnCopy").onclick = async () => {
+  const txt = items.map((x, i) => (i + 1) + ". " + (x.done ? "[x] " : "[ ] ") + x.text).join("\n");
+  try {
+    await navigator.clipboard.writeText(txt);
+    $("#hint").textContent = "已复制";
+  } catch (e) {
+    const ta = document.createElement("textarea");
+    ta.value = txt; document.body.appendChild(ta); ta.select();
+    document.execCommand("copy"); ta.remove();
+    $("#hint").textContent = "已复制";
+  }
+};
+
+render();
+</script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/tools/sw.js").catch(function(){});});}</script></body>
+</html>
