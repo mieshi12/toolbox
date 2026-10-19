@@ -1,0 +1,16 @@
+{
+  "name": "亲戚称呼",
+  "short_name": "亲戚称呼",
+  "description": "中文亲属称谓计算器，离线可用",
+  "start_url": "/kin/",
+  "scope": "/kin/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f1115",
+  "theme_color": "#0f1115",
+  "lang": "zh-CN",
+  "icons": [
+    { "src": "/kin/icon.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any" },
+    { "src": "/kin/icon.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
