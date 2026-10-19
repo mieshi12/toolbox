@@ -1,0 +1,903 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f1115">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>亲戚称呼</title>
+<style>
+:root{
+  --bg:#0f1115;--card:#16181d;--card2:#1c1f26;--line:#23262e;--fg:#e8eaed;
+  --dim:#8b919b;--dim2:#4a4f58;--blue:#4d6bfe;--gold:#e3b341;--green:#3fb950;--red:#f85149;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei UI","PingFang SC",sans-serif;
+  overscroll-behavior:none}
+.app{max-width:560px;margin:0 auto;padding:0 14px calc(24px + env(safe-area-inset-bottom));min-height:100%}
+header{display:flex;align-items:center;gap:10px;padding:calc(14px + env(safe-area-inset-top)) 0 8px}
+header h1{margin:0;font-size:17px;font-weight:600;letter-spacing:.02em}
+header .tag{margin-left:auto;font-size:10.5px;color:var(--dim2);border:1px solid var(--line);
+  border-radius:99px;padding:3px 9px}
+
+.modes{display:flex;gap:6px;margin:4px 0 10px}
+.modes button{flex:1;background:var(--card);border:1px solid var(--line);color:var(--dim);
+  border-radius:10px;padding:9px;font-size:13px;font-family:inherit}
+.modes button.on{background:rgba(77,107,254,.16);border-color:rgba(77,107,254,.6);color:#cdd8ff}
+
+.regions{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}
+.regions button{background:var(--card);border:1px solid var(--line);color:var(--dim);
+  border-radius:99px;padding:6px 12px;font-size:12px;font-family:inherit}
+.regions button.on{background:rgba(227,179,65,.14);border-color:rgba(227,179,65,.55);color:var(--gold)}
+
+.chain{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:34px;
+  padding:6px 0 4px;font-size:13px;color:var(--dim)}
+.chain .me{color:var(--blue)}
+.chain .chip{background:var(--card2);border:1px solid var(--line);border-radius:99px;
+  padding:4px 9px 4px 11px;color:#cfd4dc;font-size:12.5px;display:inline-flex;gap:6px;align-items:center}
+.chain .chip i{color:var(--dim2);font-style:normal;font-size:13px;line-height:1}
+
+.result{background:linear-gradient(180deg,#1a1e27,#141720);border:1px solid var(--line);
+  border-radius:16px;padding:18px 16px;margin:8px 0 14px;min-height:120px}
+.result .big{font-size:38px;font-weight:700;letter-spacing:.04em;line-height:1.2;color:#fff}
+.result .alt{margin-top:8px;font-size:13px;color:var(--gold);line-height:1.7}
+.result .note{margin-top:8px;font-size:12px;color:var(--dim);line-height:1.6}
+.result .note b{color:#b9c0ca;font-weight:500}
+.result.blank .big{font-size:22px;color:var(--dim2);font-weight:500}
+
+.keys{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.keys button{background:var(--card);border:1px solid var(--line);color:#dfe3ea;border-radius:13px;
+  padding:14px 0;font-size:15px;font-family:inherit;font-weight:500}
+.keys button:active{background:#22262f;transform:scale(.98)}
+.keys button.m{color:#9fb4ff;border-color:#2a3350}
+.keys button.f{color:#ffb3c7;border-color:#4a2a34}
+.keys button.d{color:#9be3b0;border-color:#28452f}
+
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.row2 button{background:var(--card2);border:1px solid var(--line);color:var(--dim);
+  border-radius:12px;padding:11px;font-size:13px;font-family:inherit}
+
+.manual{display:flex;gap:8px;margin-top:12px}
+.manual input{flex:1;background:var(--card);border:1px solid var(--line);color:var(--fg);
+  border-radius:12px;padding:12px 13px;font-size:14px;font-family:inherit;outline:none;min-width:0}
+.manual button{background:var(--blue);border:0;color:#fff;border-radius:12px;padding:0 18px;
+  font-size:14px;font-family:inherit}
+
+.sec{margin-top:18px}
+.sec .h{font-size:11.5px;color:var(--dim2);margin-bottom:9px;letter-spacing:.05em}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chips button{background:var(--card);border:1px solid var(--line);color:#c2c8d1;border-radius:99px;
+  padding:7px 12px;font-size:12.5px;font-family:inherit}
+
+.qcard{background:linear-gradient(180deg,#1a1e27,#141720);border:1px solid var(--line);
+  border-radius:16px;padding:18px 16px;margin:4px 0 12px}
+.qcard .q{font-size:17px;line-height:1.7;color:#fff}
+.qcard .qh{margin-top:6px;font-size:11px;color:var(--dim2)}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.opts button{background:var(--card2);border:1px solid var(--line);color:#dfe3ea;border-radius:12px;
+  padding:14px 8px;font-size:15px;font-family:inherit}
+.opts button:disabled{opacity:1}
+.opts button.right{background:rgba(63,185,80,.18);border-color:rgba(63,185,80,.6);color:#7ee787}
+.opts button.wrong{background:rgba(248,81,73,.16);border-color:rgba(248,81,73,.55);color:#ff9d97}
+.qfoot{display:flex;align-items:center;justify-content:space-between;margin-top:12px}
+.qfoot .score{font-size:12px;color:var(--dim)}
+.qfoot button{background:var(--blue);border:0;color:#fff;border-radius:11px;padding:10px 18px;
+  font-size:13.5px;font-family:inherit;display:none}
+
+.hidden{display:none!important}
+.foot{margin-top:22px;font-size:11px;color:var(--dim2);line-height:1.9;text-align:center}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>亲戚称呼</h1>
+    <span class="tag" id="tag">离线可用</span>
+  </header>
+
+  <div class="modes">
+    <button id="mQuery" class="on">查称呼</button>
+    <button id="mQuiz">考一考</button>
+  </div>
+
+  <div class="regions" id="regions"></div>
+
+  <!-- 查询模式 -->
+  <div id="viewQuery">
+    <div class="chain" id="chain"><span class="me">我</span></div>
+
+    <div class="result blank" id="result">
+      <div class="big" id="big">从我出发</div>
+      <div class="alt" id="alt"></div>
+      <div class="note" id="note">点下面的「爸爸 / 妈妈」，一直点下去就看结果</div>
+    </div>
+
+    <div class="keys" id="keys"></div>
+
+    <div class="row2">
+      <button id="bUndo">退一步</button>
+      <button id="bClear">清空重来</button>
+    </div>
+
+    <div class="manual">
+      <input id="q" placeholder="直接打：爸爸的爸爸 / 老婆的哥哥" autocomplete="off">
+      <button id="bCalc">查</button>
+    </div>
+
+    <div class="sec">
+      <div class="h">常见问法（点一下）</div>
+      <div class="chips" id="examples"></div>
+    </div>
+
+    <div class="sec">
+      <div class="h">反查 · 这个称呼是什么关系</div>
+      <div class="chips" id="revchips"></div>
+    </div>
+
+    <div class="sec">
+      <div class="h">最近查过</div>
+      <div class="chips" id="recent"></div>
+    </div>
+  </div>
+
+  <!-- 测验模式 -->
+  <div id="viewQuiz" class="hidden">
+    <div class="qcard">
+      <div class="q" id="qText">准备出题…</div>
+      <div class="qh" id="qHint">从「我」出发，选一个称呼</div>
+    </div>
+    <div class="opts" id="qOpts"></div>
+    <div class="qfoot">
+      <span class="score" id="qScore">答对 0 / 0</span>
+      <button id="qNext">下一题</button>
+    </div>
+    <div class="sec">
+      <div class="h">说明</div>
+      <div style="font-size:12px;color:var(--dim);line-height:1.9">
+        随机出题，题干是一个关系链，四个选项里选正确的称谓。答错会亮出正确答案。
+        题库由称谓引擎实时生成，不重复刷同一批题。
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">数据只在本机 · 不联网也能用 · 覆盖直系、旁系、堂表、再从、姻亲</div>
+</div>
+
+<script>
+/* kinship.js — 中文亲属称谓引擎（纯函数，离线可用）
+   用法：Kin.parse('爸爸的爸爸') -> ['F','F']；Kin.naming(codes) -> {main, alt, note} */
+(function (root, factory) {
+  var api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  else root.Kin = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  'use strict';
+
+  var WORDS = {
+    F: ['爸爸', '父亲', '爸', '爹', '老爹', '老爸', '家父'],
+    M: ['妈妈', '母亲', '妈', '娘', '老妈', '家母'],
+    S: ['儿子', '儿'],
+    D: ['女儿', '闺女'],
+    B: ['哥哥', '哥', '兄长', '大哥', '兄'],
+    b: ['弟弟', '弟', '小弟'],
+    Z: ['姐姐', '姐', '姊', '大姐'],
+    z: ['妹妹', '妹', '小妹'],
+    H: ['丈夫', '老公', '先生', '夫君'],
+    W: ['妻子', '老婆', '太太', '媳妇', '夫人']
+  };
+  var CODE2WORD = { F: '爸爸', M: '妈妈', S: '儿子', D: '女儿', B: '哥哥', b: '弟弟', Z: '姐姐', z: '妹妹', H: '丈夫', W: '妻子' };
+
+  var LOOK = {};
+  Object.keys(WORDS).forEach(function (k) { WORDS[k].forEach(function (w) { LOOK[w] = k; }); });
+  var KEYS = Object.keys(LOOK).sort(function (a, b) { return b.length - a.length; });
+
+  // 复合称谓 → 关系链（让"爷爷的哥哥"这种输入也能算）
+  var EXO = {
+    '爷爷': ['F', 'F'], '祖父': ['F', 'F'], '阿公': ['F', 'F'],
+    '奶奶': ['F', 'M'], '祖母': ['F', 'M'], '阿婆': ['F', 'M'],
+    '外公': ['M', 'F'], '姥爷': ['M', 'F'], '外祖父': ['M', 'F'],
+    '外婆': ['M', 'M'], '姥姥': ['M', 'M'], '外祖母': ['M', 'M'],
+    '太爷爷': ['F', 'F', 'F'], '曾祖父': ['F', 'F', 'F'], '老爷爷': ['F', 'F', 'F'],
+    '太奶奶': ['F', 'F', 'M'], '曾祖母': ['F', 'F', 'M'], '老奶奶': ['F', 'F', 'M'],
+    '太外公': ['M', 'F', 'F'], '外曾祖父': ['M', 'F', 'F'],
+    '太外婆': ['M', 'F', 'M'], '外曾祖母': ['M', 'F', 'M'],
+    '伯父': ['F', 'B'], '伯伯': ['F', 'B'], '大伯': ['F', 'B'],
+    '叔父': ['F', 'b'], '叔叔': ['F', 'b'], '小叔': ['F', 'b'],
+    '姑姑': ['F', 'Z'], '姑妈': ['F', 'Z'], '姑母': ['F', 'Z'],
+    '舅舅': ['M', 'B'], '舅父': ['M', 'B'], '大舅': ['M', 'B'],
+    '姨妈': ['M', 'Z'], '姨母': ['M', 'Z'], '阿姨': ['M', 'Z'], '小姨': ['M', 'Z'],
+    '侄子': ['B', 'S'], '侄儿': ['B', 'S'], '侄女': ['B', 'D'],
+    '外甥': ['Z', 'S'], '外甥女': ['Z', 'D'],
+    '孙子': ['S', 'S'], '孙女': ['S', 'D'], '外孙': ['D', 'S'], '外孙女': ['D', 'D'],
+    '曾孙': ['S', 'S', 'S'], '曾孙女': ['S', 'S', 'D'],
+    '堂哥': ['F', 'B', 'S'], '堂兄': ['F', 'B', 'S'], '堂弟': ['F', 'b', 'S'],
+    '堂姐': ['F', 'B', 'D'], '堂妹': ['F', 'b', 'D'],
+    '表哥': ['M', 'B', 'S'], '表兄': ['M', 'B', 'S'], '表弟': ['M', 'B', 'S'],
+    '表姐': ['M', 'B', 'D'], '表妹': ['M', 'B', 'D'],
+    '岳父': ['W', 'F'], '老丈人': ['W', 'F'], '岳母': ['W', 'M'], '丈母娘': ['W', 'M'],
+    '公公': ['H', 'F'], '婆婆': ['H', 'M'],
+    '嫂子': ['B', 'W'], '弟媳': ['b', 'W'], '姐夫': ['Z', 'H'], '妹夫': ['z', 'H'],
+    '儿媳': ['S', 'W'], '女婿': ['D', 'H'],
+    '伯母': ['F', 'B', 'W'], '婶母': ['F', 'b', 'W'], '婶婶': ['F', 'b', 'W'],
+    '姑父': ['F', 'Z', 'H'], '舅母': ['M', 'B', 'W'], '姨父': ['M', 'Z', 'H'],
+    '伯公': ['F', 'F', 'B'], '叔公': ['F', 'F', 'b'], '姑婆': ['F', 'F', 'Z'],
+    '舅公': ['F', 'M', 'B'], '姨婆': ['F', 'M', 'Z'],
+    '伯祖父': ['F', 'F', 'B'], '叔祖父': ['F', 'F', 'b'], '姑祖母': ['F', 'F', 'Z'],
+    '舅祖父': ['F', 'M', 'B'], '姨祖母': ['F', 'M', 'Z'],
+    '曾伯祖父': ['F', 'F', 'F', 'B'],
+    '大舅子': ['W', 'B'], '小舅子': ['W', 'b'], '大姨子': ['W', 'Z'], '小姨子': ['W', 'z'],
+    '大伯子': ['H', 'B'], '小叔子': ['H', 'b'], '大姑子': ['H', 'Z'], '小姑子': ['H', 'z'],
+    '堂侄': ['F', 'B', 'S', 'S'], '表侄': ['M', 'B', 'S', 'S'],
+    '侄孙': ['B', 'S', 'S'], '外甥孙': ['Z', 'S', 'S'],
+    '再从兄': ['F', 'F', 'B', 'S', 'S'], '再从弟': ['F', 'F', 'B', 'S', 'S'],
+    '表叔': ['F', 'F', 'Z', 'S'], '表伯': ['F', 'F', 'Z', 'S'], '表姑': ['F', 'F', 'Z', 'D'],
+    '堂叔': ['F', 'F', 'B', 'S'], '堂伯': ['F', 'F', 'B', 'S'], '堂姑': ['F', 'F', 'B', 'D'],
+    '堂嫂': ['F', 'B', 'S', 'W'], '堂姐夫': ['F', 'B', 'D', 'H'], '表嫂': ['M', 'B', 'S', 'W'],
+    '外甥孙': ['Z', 'S', 'S'], '侄孙女': ['B', 'S', 'D']
+  };
+
+  function sexOf(c) { return 'FSBbH'.indexOf(c) >= 0 ? 'm' : 'f'; }
+  function isSib(c) { return 'BbZz'.indexOf(c) >= 0; }
+  function isUp(c) { return c === 'F' || c === 'M'; }
+  function isDown(c) { return c === 'S' || c === 'D'; }
+  function isSpouse(c) { return c === 'H' || c === 'W'; }
+  function cn(n) {
+    var d = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
+    if (n <= 10) return d[n];
+    if (n < 20) return '十' + d[n - 10];
+    return d[Math.floor(n / 10)] + '十' + (n % 10 ? d[n % 10] : '');
+  }
+
+  /* ---------- 文本 → 代码序列 ---------- */
+  function parse(text) {
+    if (!text) return [];
+    var s = String(text).replace(/\s+/g, '').replace(/^(我的|我)/, '');
+    if (!s) return [];
+    var parts = s.split(/的|之/).filter(Boolean);
+    var out = [];
+    for (var i = 0; i < parts.length; i++) {
+      var p = parts[i];
+      if (EXO[p]) { out.push.apply(out, EXO[p]); continue; }
+      if (LOOK[p]) { out.push(LOOK[p]); continue; }
+      var hit = null;
+      for (var j = 0; j < KEYS.length; j++) if (p.indexOf(KEYS[j]) >= 0) { hit = LOOK[KEYS[j]]; break; }
+      if (!hit) return null;
+      out.push(hit);
+    }
+    return out;
+  }
+  function describe(codes) {
+    return codes.map(function (c) { return CODE2WORD[c]; }).join('的');
+  }
+
+  /* ---------- 化简 ---------- */
+  function reduce(codes) {
+    var a = codes.slice(), guard = 0, changed = true;
+    while (changed && guard++ < 64) {
+      changed = false;
+      for (var i = 0; i < a.length - 1; i++) {
+        var x = a[i], y = a[i + 1];
+        if (isSib(x) && isUp(y)) { a.splice(i, 2, y); changed = true; break; }
+        if (isDown(x) && isUp(y)) { a.splice(i, 2); changed = true; break; }
+        if (isSpouse(x) && isSpouse(y)) { a.splice(i, 2); changed = true; break; }
+        if (isSib(x) && isSib(y)) { a.splice(i, 2, y); changed = true; break; }
+      }
+    }
+    return a;
+  }
+
+  /* ---------- 坐标 ---------- */
+  function analyze(codes) {
+    var up = 0, down = 0, upSex = [], downSex = [], sib = null, sibIndex = -1;
+    for (var i = 0; i < codes.length; i++) {
+      var c = codes[i];
+      if (c === 'F') { up++; upSex.push('m'); }
+      else if (c === 'M') { up++; upSex.push('f'); }
+      else if (isSib(c)) {
+        up++; upSex.push('m');
+        down++; downSex.push(sexOf(c));
+        sib = { elder: (c === 'B' || c === 'Z') ? 'older' : 'younger', sex: sexOf(c), at: i };
+        sibIndex = i;
+      }
+      else if (c === 'S') { down++; downSex.push('m'); }
+      else if (c === 'D') { down++; downSex.push('f'); }
+    }
+    return { up: up, down: down, upSex: upSex, downSex: downSex, sib: sib, sibIndex: sibIndex };
+  }
+
+  /* ---------- 名表 ---------- */
+  var UP_BOOK_M = ['', '父亲', '祖父', '曾祖父', '高祖父', '天祖父', '烈祖父', '太祖父', '远祖父', '鼻祖父'];
+  var UP_BOOK_F = ['', '母亲', '祖母', '曾祖母', '高祖母', '天祖母', '烈祖母', '太祖母', '远祖母', '鼻祖母'];
+  var UP_OUT_M = ['', '爸爸', '爷爷', '太爷爷', '高祖父', '天祖父', '烈祖父', '太祖父', '远祖父', '鼻祖父'];
+  var UP_OUT_F = ['', '妈妈', '奶奶', '太奶奶', '高祖母', '天祖母', '烈祖母', '太祖母', '远祖母', '鼻祖母'];
+  var DOWN_M = ['', '儿子', '孙子', '曾孙', '玄孙', '来孙', '晜孙', '仍孙', '云孙', '耳孙'];
+  var DOWN_F = ['', '女儿', '孙女', '曾孙女', '玄孙女', '来孙女', '晜孙女', '仍孙女', '云孙女', '耳孙女'];
+
+  function upResult(n, sex, wai) {
+    var m = sex === 'm', main, alt;
+    if (n === 1) {
+      main = m ? '爸爸' : '妈妈';
+      alt = m ? ['父亲', '爹', '老爸'] : ['母亲', '娘', '老妈'];
+    } else if (n === 2) {
+      if (wai) { main = m ? '外公' : '外婆'; alt = m ? ['外祖父', '姥爷', '阿公'] : ['外祖母', '姥姥', '阿婆']; }
+      else { main = m ? '爷爷' : '奶奶'; alt = m ? ['祖父', '阿公'] : ['祖母', '阿婆']; }
+    } else if (n === 3) {
+      if (wai) { main = m ? '太外公' : '太外婆'; alt = [m ? '外曾祖父' : '外曾祖母']; }
+      else { main = m ? '太爷爷' : '太奶奶'; alt = [m ? '曾祖父' : '曾祖母', m ? '老爷爷' : '老奶奶']; }
+    } else if (n <= 9) {
+      main = (wai ? '外' : '') + (m ? UP_BOOK_M[n] : UP_BOOK_F[n]);
+      alt = [m ? UP_OUT_M[n] : UP_OUT_F[n]];
+    } else {
+      main = (wai ? '外' : '') + '第' + n + '代' + (m ? '祖父' : '祖母');
+      alt = [m ? '上' + n + '代男性直系祖先' : '上' + n + '代女性直系祖先'];
+    }
+    return { main: main, alt: alt, sex: sex, kind: { type: 'up', n: n, wai: !!wai, sex: sex } };
+  }
+
+  function downResult(n, sex, wai) {
+    var m = sex === 'm', main, alt = [];
+    if (n === 1) {
+      main = m ? '儿子' : '女儿';
+      alt = m ? ['犬子', '儿'] : ['闺女', '千金'];
+    } else if (n === 2) {
+      if (wai) main = m ? '外孙' : '外孙女';
+      else main = m ? '孙子' : '孙女';
+      alt = m ? ['男孙'] : ['女孙'];
+    } else if (n <= 9) {
+      main = (wai ? '外' : '') + (m ? DOWN_M[n] : DOWN_F[n]);
+      alt = [m ? '下' + n + '代男性直系' : '下' + n + '代女性直系'];
+    } else {
+      main = (wai ? '外' : '') + '第' + n + '代孙';
+      alt = [];
+    }
+    return { main: main, alt: alt, sex: sex, kind: { type: 'down', n: n, wai: !!wai, sex: sex } };
+  }
+
+  function tangPrefix(n) {
+    if (n === 2) return '堂';
+    if (n === 3) return '再从';
+    if (n === 4) return '三从';
+    return cn(n - 1) + '从';
+  }
+  function biaoPrefix(n) {
+    if (n === 2) return '表';
+    if (n === 3) return '再从表';
+    if (n === 4) return '三从表';
+    return cn(n - 1) + '从表';
+  }
+  function isTang(upSex, sib) {
+    if (!sib || sib.sex !== 'm') return false;
+    for (var i = 0; i < upSex.length; i++) if (upSex[i] === 'f') return false;
+    return true;
+  }
+
+  function cousinResult(n, sex, sib, upSex) {
+    var m = sex === 'm';
+    var elder = sib ? sib.elder : null;
+    var main, alt = [], book = '';
+    if (n === 1) {
+      if (elder === 'older') main = m ? '哥哥' : '姐姐';
+      else if (elder === 'younger') main = m ? '弟弟' : '妹妹';
+      else main = m ? '哥哥/弟弟' : '姐姐/妹妹';
+      alt = m ? ['兄', '家兄'] : ['姐', '家姐'];
+    } else {
+      var pre = isTang(upSex, sib) ? tangPrefix(n) : biaoPrefix(n);
+      if (elder === 'older') { main = pre + (m ? '哥' : '姐'); book = pre + (m ? '兄' : '姐'); }
+      else if (elder === 'younger') { main = pre + (m ? '弟' : '妹'); book = pre + (m ? '弟' : '妹'); }
+      else { main = pre + (m ? '兄弟' : '姐妹'); book = main; }
+      alt = [book];
+      if (n >= 3) alt.push('远房' + (m ? '兄' : '姐') + '（' + cn(n - 1) + '从）');
+    }
+    return { main: main, alt: alt, sex: sex, kind: { type: 'cousin', n: n, elder: elder, tang: isTang(upSex, sib), sex: sex } };
+  }
+
+  var GEN_HEAD = ['', '', '', '曾', '高', '天', '烈', '太', '远', '鼻'];
+
+  function uncleResult(an, sex, codes) {
+    var d = an.up - an.down;        // 目标比我高 d 代
+    var n = an.down;                // 旁系分叉距离
+    var sib = an.sib, sibIndex = an.sibIndex;
+    var side = (sibIndex <= 0) ? 'father' : (codes[sibIndex - 1] === 'M' ? 'mother' : 'father');
+    var elder = sib ? sib.elder : null;
+    var sibSex = sib ? sib.sex : 'm';
+    var pre = sibSex === 'f' ? '姑' : (elder === 'younger' ? '叔' : '伯');
+    if (side === 'mother') pre = sibSex === 'f' ? '姨' : '舅';
+
+    var tang = !!(sib && sib.sex === 'm') && an.upSex.every(function (s) { return s === 'm'; });
+    var main, alt = [];
+    var oralG = { 伯: '伯公', 叔: '叔公', 姑: '姑婆', 舅: '舅公', 姨: '姨婆' };
+    var oralP = { 伯: '大伯', 叔: '叔叔', 姑: '姑姑', 舅: '舅舅', 姨: '姨妈' };
+
+    if (d === 1) {
+      if (n === 1) {
+        var outc = { 伯: '伯父', 叔: '叔叔', 姑: '姑姑', 舅: '舅舅', 姨: '姨妈' };
+        var bookc = { 伯: '伯父', 叔: '叔父', 姑: '姑母', 舅: '舅父', 姨: '姨母' };
+        main = outc[pre] || (pre + (sibSex === 'f' ? '母' : '父'));
+        alt = (bookc[pre] && bookc[pre] !== main) ? [bookc[pre]] : [];
+      } else {
+        var tp = tang ? tangPrefix(n) : biaoPrefix(n);
+        if (sex === 'm') { main = tp + (side === 'mother' ? '舅' : '叔'); alt = [tp + '伯']; }
+        else { main = tp + (side === 'mother' ? '姨' : '姑'); alt = []; }
+      }
+    } else {
+      var head = d >= 3 ? GEN_HEAD[Math.min(d, 9)] : '';
+      var waiPre = (an.upSex[0] === 'f') ? '外' : '';
+      main = waiPre + head + pre + (sex === 'm' ? '祖父' : '祖母');
+      if (n >= 2) main = (tang ? tangPrefix(n) : biaoPrefix(n)) + main;
+      alt = [oralG[pre] || main];
+    }
+    return { main: main, alt: alt, sex: sex, kind: { type: 'uncle', d: d, n: n, pre: pre, side: side, sex: sex } };
+  }
+
+  function nephewResult(an, sex) {
+    var k = an.down - an.up;
+    var n = an.up;
+    var viaSister = !!(an.sib && an.sib.sex === 'f');
+    var m = sex === 'm';
+    var main, alt = [];
+    if (k === 1) {
+      main = viaSister ? (m ? '外甥' : '外甥女') : (m ? '侄子' : '侄女');
+      alt = viaSister ? (m ? [] : ['甥女']) : (m ? ['侄儿'] : []);
+    } else {
+      var genW = ['', '', '孙', '曾孙', '玄孙', '来孙', '晜孙'][Math.min(k, 6)] || ('下' + k + '代孙');
+      main = (viaSister ? '外甥' : '侄') + genW + (m ? '' : '女');
+      alt = [];
+    }
+    var tang = !!(an.sib && an.sib.sex === 'm') && an.upSex.every(function (s) { return s === 'm'; });
+    if (n >= 2) {
+      main = (tang ? tangPrefix(n) : biaoPrefix(n)) + (viaSister ? (m ? '外甥' : '外甥女') : (m ? '侄' : '侄女'));
+      alt = [];
+    }
+    return { main: main, alt: alt, sex: sex, kind: { type: 'nephew', k: k, n: n, viaSister: viaSister, sex: sex } };
+  }
+
+  /* ---------- 姻亲 ---------- */
+  function spouseName(core, sp) {
+    var k = core.kind || {};
+    var other = sp === 'W' ? 'f' : 'm';    // 配偶的性别
+    var main, alt = [], note = core.main + '的' + (sp === 'W' ? '妻子' : '丈夫');
+    if (k.type === 'self' || k.type === 'spouse') {
+      main = sp === 'W' ? '妻子' : '丈夫';
+      alt = sp === 'W' ? ['老婆', '太太'] : ['老公'];
+    } else if (k.type === 'up') {
+      if (k.n === 1) { main = other === 'f' ? '妈妈' : '爸爸'; alt = ['（也可能叫继母/继父）']; }
+      else { var r = upResult(k.n, other, k.wai); main = r.main; alt = r.alt; }
+    } else if (k.type === 'down') {
+      if (k.n === 1) { main = other === 'f' ? '儿媳' : '女婿'; alt = [other === 'f' ? '媳妇' : '姑爷']; }
+      else { main = other === 'f' ? '孙媳' : '孙女婿'; alt = []; }
+    } else if (k.type === 'cousin') {
+      if (k.n === 1) {
+        if (k.sex === 'm') main = k.elder === 'older' ? '嫂子' : '弟媳';
+        else main = k.elder === 'older' ? '姐夫' : '妹夫';
+        alt = [];
+      } else {
+        var p = k.tang ? tangPrefix(k.n) : biaoPrefix(k.n);
+        main = p + (k.sex === 'm' ? (k.elder === 'older' ? '嫂' : '弟媳') : (k.elder === 'older' ? '姐夫' : '妹夫'));
+        alt = [];
+      }
+    } else if (k.type === 'uncle') {
+      var map = { 伯: '伯母', 叔: '婶母', 姑: '姑父', 舅: '舅母', 姨: '姨父' };
+      if (k.d === 1) {
+        main = map[k.pre] || (core.main + '的配偶');
+      } else {
+        var head2 = k.d >= 3 ? GEN_HEAD[Math.min(k.d, 9)] : '';
+        main = head2 + k.pre + (other === 'f' ? '祖母' : '祖父');
+      }
+      if (k.n >= 2 && k.d === 1) main = (k.side === 'mother' ? biaoPrefix(k.n) : tangPrefix(k.n)) + main;
+      alt = [];
+    } else if (k.type === 'nephew') {
+      main = k.viaSister ? (other === 'f' ? '外甥媳' : '外甥女婿') : (other === 'f' ? '侄媳' : '侄女婿');
+      alt = [];
+    } else {
+      main = core.main + '的' + (sp === 'W' ? '妻子' : '丈夫');
+    }
+    return { main: main, alt: alt, note: note, sex: other, kind: { type: 'inlaw', base: core.kind } };
+  }
+
+  function inlaw(inner, sp) {
+    var k = inner.kind || {};
+    var prefix = sp === 'W' ? '妻子' : '丈夫';
+    var main, alt = [], note = prefix + '的' + inner.main;
+    if (k.type === 'spouse') {
+      return { main: '我', alt: ['本人'], note: '配偶的配偶就是自己', sex: null, kind: { type: 'self' } };
+    }
+    if (k.type === 'up' && k.n === 1) {
+      if (sp === 'W') main = inner.sex === 'm' ? '岳父' : '岳母';
+      else main = inner.sex === 'm' ? '公公' : '婆婆';
+      alt = sp === 'W' ? (inner.sex === 'm' ? ['老丈人', '岳丈'] : ['丈母娘']) : (inner.sex === 'm' ? ['家公'] : ['家婆']);
+    } else if (k.type === 'up' && k.n >= 2) {
+      var head3 = k.n >= 3 ? GEN_HEAD[Math.min(k.n - 1, 9)] : '';
+      main = (sp === 'W' ? '岳' : '夫家') + head3 + (inner.sex === 'm' ? '祖父' : '祖母');
+      alt = [];
+    } else if (k.type === 'cousin' && k.n === 1) {
+      if (sp === 'W') {
+        main = inner.sex === 'm' ? (k.elder === 'older' ? '大舅子' : '小舅子') : (k.elder === 'older' ? '大姨子' : '小姨子');
+        alt = inner.sex === 'm' ? ['内兄', '内弟'] : ['姨姐', '姨妹'];
+      } else {
+        main = inner.sex === 'm' ? (k.elder === 'older' ? '大伯子' : '小叔子') : (k.elder === 'older' ? '大姑子' : '小姑子');
+        alt = [];
+      }
+    } else {
+      main = prefix + '的' + inner.main;
+      alt = ['（姻亲）'];
+    }
+    return { main: main, alt: alt, note: note, sex: inner.sex, kind: { type: 'inlaw', base: inner.kind } };
+  }
+
+  /* ---------- 主入口 ---------- */
+  function naming(codes) {
+    if (!codes || !codes.length) return { main: '我自己', alt: ['本人'], note: '', sex: null, kind: { type: 'self' } };
+    var c = codes.slice();
+
+    // 配偶在首位：换基准
+    if (isSpouse(c[0])) {
+      var sp0 = c[0], rest0 = c.slice(1);
+      if (!rest0.length) {
+        return sp0 === 'W'
+          ? { main: '妻子', alt: ['老婆', '太太'], note: '我的妻子', sex: 'f', kind: { type: 'spouse' } }
+          : { main: '丈夫', alt: ['老公'], note: '我的丈夫', sex: 'm', kind: { type: 'spouse' } };
+      }
+      var inner0 = naming(rest0);
+      if (inner0) return inlaw(inner0, sp0);
+    }
+
+    // 配偶在末位
+    if (c.length > 1 && isSpouse(c[c.length - 1])) {
+      var spL = c[c.length - 1];
+      var core = naming(reduce(c.slice(0, -1)));
+      if (core) return spouseName(core, spL);
+    }
+
+    c = reduce(c);
+    if (!c.length) return { main: '我自己', alt: ['本人'], note: '同一人', sex: null, kind: { type: 'self' } };
+
+    var an = analyze(c);
+    var last = c[c.length - 1];
+    var targetSex = sexOf(last);
+    var up = an.up, down = an.down;
+
+    if (down === 0) return upResult(up, targetSex, an.upSex[0] === 'f');
+    if (up === 0) return downResult(down, targetSex, an.downSex[0] === 'f');
+
+    var d = up - down;
+    if (d === 0) return cousinResult(up, targetSex, an.sib, an.upSex);
+    if (d > 0) return uncleResult(an, targetSex, c);
+    return nephewResult(an, targetSex);
+  }
+
+  function calc(text) {
+    var codes = parse(text);
+    if (codes === null) return { ok: false, error: '有认不出的亲属词' };
+    var r = naming(codes);
+    if (!r) return { ok: false, error: '算不出来' };
+    r.ok = true;
+    r.codes = codes;
+    r.text = describe(codes);
+    return r;
+  }
+
+  /* ---------- 反查表（称谓 → 关系） ---------- */
+  var REVERSE = [
+    ['爷爷', '爸爸的爸爸'], ['奶奶', '爸爸的妈妈'], ['外公', '妈妈的爸爸'], ['外婆', '妈妈的妈妈'],
+    ['太爷爷', '爸爸的爸爸的爸爸'], ['太奶奶', '爸爸的爸爸的妈妈'],
+    ['太外公', '妈妈的爸爸的爸爸'], ['太外婆', '妈妈的爸爸的妈妈'],
+    ['伯父', '爸爸的哥哥'], ['叔叔', '爸爸的弟弟'], ['姑姑', '爸爸的姐姐'],
+    ['舅舅', '妈妈的哥哥'], ['姨妈', '妈妈的姐姐'],
+    ['堂哥', '爸爸的哥哥的儿子'], ['堂姐', '爸爸的哥哥的女儿'],
+    ['表哥', '妈妈的哥哥的儿子'], ['表姐', '爸爸的姐姐的女儿'],
+    ['侄子', '哥哥的儿子'], ['侄女', '弟弟的女儿'],
+    ['外甥', '姐姐的儿子'], ['外甥女', '妹妹的女儿'],
+    ['孙子', '儿子的儿子'], ['孙女', '儿子的女儿'],
+    ['外孙', '女儿的儿子'], ['外孙女', '女儿的女儿'],
+    ['岳父', '老婆的爸爸'], ['岳母', '老婆的妈妈'],
+    ['公公', '老公的爸爸'], ['婆婆', '老公的妈妈'],
+    ['嫂子', '哥哥的老婆'], ['弟媳', '弟弟的老婆'],
+    ['姐夫', '姐姐的老公'], ['妹夫', '妹妹的老公'],
+    ['儿媳', '儿子的老婆'], ['女婿', '女儿的老公'],
+    ['伯公', '爷爷的哥哥'], ['叔公', '爷爷的弟弟'], ['姑婆', '爷爷的姐姐'],
+    ['舅公', '奶奶的哥哥'], ['姨婆', '奶奶的姐姐'],
+    ['堂侄', '爸爸的哥哥的儿子的儿子'], ['表侄', '妈妈的哥哥的儿子的儿子'],
+    ['侄孙', '哥哥的儿子的儿子'], ['外甥孙', '姐姐的儿子的儿子'],
+    ['大舅子', '老婆的哥哥'], ['小舅子', '老婆的弟弟'],
+    ['大姨子', '老婆的姐姐'], ['小姨子', '老婆的妹妹'],
+    ['大伯子', '老公的哥哥'], ['小叔子', '老公的弟弟'],
+    ['伯祖母', '爷爷的哥哥的老婆'], ['姑祖父', '爷爷的姐姐的老公'],
+    ['再从兄', '爸爸的爸爸的哥哥的孙子'], ['堂堂兄', '爸爸的哥哥的儿子']
+  ];
+
+  return {
+    parse: parse, describe: describe, reduce: reduce, analyze: analyze,
+    naming: naming, calc: calc, reverseTable: REVERSE, codeWord: CODE2WORD
+  };
+});
+
+</script>
+<script>
+const $ = s => document.querySelector(s);
+const KEYS = [
+  { c: 'F', w: '爸爸', cls: 'm' }, { c: 'M', w: '妈妈', cls: 'f' },
+  { c: 'B', w: '哥哥', cls: 'm' }, { c: 'b', w: '弟弟', cls: 'm' },
+  { c: 'Z', w: '姐姐', cls: 'f' }, { c: 'z', w: '妹妹', cls: 'f' },
+  { c: 'S', w: '儿子', cls: 'd' }, { c: 'D', w: '女儿', cls: 'd' },
+  { c: 'H', w: '丈夫', cls: 'm' }, { c: 'W', w: '妻子', cls: 'f' }
+];
+const EXAMPLES = [
+  '爸爸的爸爸', '妈妈的姐姐的儿子', '爸爸的哥哥的女儿', '爷爷的哥哥',
+  '太爷爷的弟弟', '姐姐的女儿的儿子', '老婆的哥哥', '儿子的儿子的儿子',
+  '妈妈的哥哥的孙子', '奶奶的姐姐', '爸爸的表哥', '侄子的儿子'
+];
+
+/* ---------- 地区叫法 ---------- */
+const REGIONS = {
+  '普通话': {},
+  '粤语': {
+    '爷爷': '阿公', '奶奶': '阿婆', '外公': '外公', '外婆': '外婆',
+    '爸爸': '老豆', '妈妈': '老母', '哥哥': '阿哥', '姐姐': '家姐',
+    '姑姑': '姑妈', '舅舅': '舅父', '伯父': '伯爷', '叔叔': '叔父',
+    '儿子': '仔', '女儿': '女', '妻子': '老婆', '丈夫': '老公',
+    '嫂子': '阿嫂', '弟媳': '弟妇', '侄子': '侄仔', '孙子': '孙'
+  },
+  '川渝': {
+    '爷爷': '爷爷', '奶奶': '婆婆', '外公': '家公', '外婆': '家婆',
+    '爸爸': '老汉儿', '妈妈': '妈', '姑姑': '嬢嬢', '伯父': '大伯',
+    '叔叔': '幺爸', '儿子': '娃儿', '女儿': '妹儿', '妻子': '婆娘', '丈夫': '男人'
+  },
+  '闽南': {
+    '爷爷': '阿公', '奶奶': '阿嬷', '爸爸': '阿爸', '妈妈': '阿母',
+    '哥哥': '阿兄', '姐姐': '阿姊', '妻子': '某', '丈夫': '翁', '儿子': '后生仔'
+  }
+};
+let region = '普通话';
+try { region = localStorage.getItem('kin_region') || '普通话'; } catch (e) {}
+if (!REGIONS[region]) region = '普通话';
+
+function localize(name) {
+  if (!name) return name;
+  const m = REGIONS[region] || {};
+  return m[name] || name;
+}
+
+/* ---------- 状态 ---------- */
+let chain = [];
+let lastResult = null;
+let lastText = '';
+const RECENT_KEY = 'kin_recent_v1';
+const SCORE_KEY = 'kin_quiz_score_v1';
+
+function codes() { return chain.map(x => x.c); }
+
+function renderChain() {
+  const box = $('#chain');
+  box.innerHTML = '<span class="me">我</span>';
+  chain.forEach((s, i) => {
+    const b = document.createElement('span');
+    b.className = 'chip';
+    b.innerHTML = s.w + '<i>×</i>';
+    b.onclick = () => { chain.splice(i, 1); render(); };
+    box.appendChild(b);
+  });
+}
+
+function show(r, textPath) {
+  const R = $('#result');
+  if (!r || !r.ok) {
+    R.className = 'result blank';
+    $('#big').textContent = (r && r.error) ? r.error : '从我出发';
+    $('#alt').textContent = '';
+    $('#note').textContent = '点下面的「爸爸 / 妈妈」，一直点下去就看结果';
+    lastResult = null;
+    return;
+  }
+  lastResult = r;
+  lastText = textPath || r.text || '';
+  R.className = 'result';
+  const shown = localize(r.main);
+  $('#big').textContent = shown;
+  const alts = [];
+  if (shown !== r.main) alts.push('通称 ' + r.main);
+  (r.alt || []).forEach(a => { if (a && alts.indexOf(a) < 0) alts.push(localize(a)); });
+  $('#alt').textContent = alts.length ? '也称：' + alts.join(' / ') : '';
+  $('#note').innerHTML = '关系：<b>' + (lastText || '') + '</b>';
+  pushRecent(lastText);
+}
+
+function render() {
+  renderChain();
+  if (!chain.length) { show(null); return; }
+  const c = codes();
+  const r = Kin.naming(c);
+  show({ ok: true, main: r.main, alt: r.alt, text: Kin.describe(c) }, Kin.describe(c));
+}
+
+function pushRecent(t) {
+  if (!t) return;
+  let arr = [];
+  try { arr = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch (e) { arr = []; }
+  arr = arr.filter(x => x !== t);
+  arr.unshift(t);
+  arr = arr.slice(0, 8);
+  try { localStorage.setItem(RECENT_KEY, JSON.stringify(arr)); } catch (e) {}
+  renderRecent();
+}
+
+function renderRecent() {
+  let arr = [];
+  try { arr = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch (e) { arr = []; }
+  const box = $('#recent');
+  box.innerHTML = '';
+  if (!arr.length) {
+    box.innerHTML = '<span style="font-size:11.5px;color:#4a4f58">还没有记录</span>';
+    return;
+  }
+  arr.forEach(t => {
+    const b = document.createElement('button');
+    b.textContent = t;
+    b.onclick = () => byText(t);
+    box.appendChild(b);
+  });
+}
+
+function byText(t) {
+  const c = Kin.parse(t);
+  if (!c) {
+    show({ ok: false, error: '认不出来' });
+    $('#note').textContent = '试试：爸爸的爸爸 / 妈妈的姐姐的儿子 / 老婆的哥哥';
+    return;
+  }
+  const r = Kin.naming(c);
+  show({ ok: true, main: r.main, alt: r.alt, text: Kin.describe(c) }, Kin.describe(c));
+}
+
+/* ---------- 模式 ---------- */
+let mode = 'query';
+function setMode(m) {
+  mode = m;
+  $('#mQuery').classList.toggle('on', m === 'query');
+  $('#mQuiz').classList.toggle('on', m === 'quiz');
+  $('#viewQuery').classList.toggle('hidden', m !== 'query');
+  $('#viewQuiz').classList.toggle('hidden', m !== 'quiz');
+  if (m === 'quiz' && !quizCur) renderQuiz();
+}
+
+/* ---------- 测验 ---------- */
+const STEPS = ['爸爸', '妈妈', '哥哥', '弟弟', '姐姐', '妹妹', '儿子', '女儿', '丈夫', '妻子'];
+const DISTRACT = ['爷爷', '奶奶', '外公', '外婆', '伯父', '叔叔', '姑姑', '舅舅', '姨妈',
+  '堂哥', '堂弟', '表哥', '表姐', '侄子', '外甥', '孙子', '外孙女', '嫂子', '姐夫',
+  '弟媳', '岳父', '公公', '太爷爷', '伯祖父', '堂叔', '表叔', '侄孙', '外甥女'];
+let quizCur = null;
+let quizScore = { right: 0, total: 0 };
+try {
+  const s = JSON.parse(localStorage.getItem(SCORE_KEY) || 'null');
+  if (s && typeof s.right === 'number') quizScore = s;
+} catch (e) {}
+
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+
+function makeQuiz() {
+  for (let attempt = 0; attempt < 120; attempt++) {
+    const n = 2 + Math.floor(Math.random() * 2);
+    const parts = [];
+    for (let i = 0; i < n; i++) parts.push(STEPS[Math.floor(Math.random() * STEPS.length)]);
+    const text = parts.join('的');
+    const c = Kin.parse(text);
+    if (!c) continue;
+    const r = Kin.naming(c);
+    if (!r || !r.main) continue;
+    const ans = r.main;
+    if (ans.indexOf('/') >= 0 || ans.length > 4 || ans === '我自己' || ans === '我') continue;
+    const pool = DISTRACT.filter(x => x !== ans);
+    const opts = [ans];
+    while (opts.length < 4) {
+      const cand = pool[Math.floor(Math.random() * pool.length)];
+      if (opts.indexOf(cand) < 0) opts.push(cand);
+    }
+    return { text: text, ans: ans, opts: shuffle(opts), note: Kin.describe(c) };
+  }
+  return null;
+}
+
+function renderQuiz() {
+  quizCur = makeQuiz();
+  if (!quizCur) return;
+  $('#qText').textContent = quizCur.text + ' 叫什么？';
+  $('#qHint').textContent = '从「我」出发 · ' + quizCur.text;
+  const box = $('#qOpts');
+  box.innerHTML = '';
+  quizCur.opts.forEach(o => {
+    const b = document.createElement('button');
+    b.textContent = localize(o);
+    b.dataset.k = o;
+    b.onclick = () => answerQuiz(b, o);
+    box.appendChild(b);
+  });
+  $('#qNext').style.display = 'none';
+  $('#qScore').textContent = '答对 ' + quizScore.right + ' / ' + quizScore.total;
+}
+
+function answerQuiz(btn, picked) {
+  const q = quizCur;
+  if (!q) return;
+  quizScore.total++;
+  if (picked === q.ans) quizScore.right++;
+  try { localStorage.setItem(SCORE_KEY, JSON.stringify(quizScore)); } catch (e) {}
+  const nodes = document.querySelectorAll('#qOpts button');
+  nodes.forEach(b => {
+    b.disabled = true;
+    if (b.dataset.k === q.ans) b.classList.add('right');
+    else if (b === btn) b.classList.add('wrong');
+  });
+  $('#qHint').textContent = (picked === q.ans ? '对了 · ' : '正确答案：' + localize(q.ans) + ' · ') + q.note;
+  $('#qScore').textContent = '答对 ' + quizScore.right + ' / ' + quizScore.total;
+  $('#qNext').style.display = 'block';
+}
+
+/* ---------- 渲染区 ---------- */
+const kb = $('#keys');
+KEYS.forEach(k => {
+  const b = document.createElement('button');
+  b.className = k.cls;
+  b.textContent = k.w;
+  b.onclick = () => { chain.push(k); render(); };
+  kb.appendChild(b);
+});
+
+$('#bUndo').onclick = () => { chain.pop(); render(); };
+$('#bClear').onclick = () => { chain = []; render(); };
+$('#bCalc').onclick = () => { const t = $('#q').value.trim(); if (t) byText(t); };
+$('#q').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); $('#bCalc').click(); }
+});
+
+const ex = $('#examples');
+EXAMPLES.forEach(t => {
+  const b = document.createElement('button');
+  b.textContent = t;
+  b.onclick = () => byText(t);
+  ex.appendChild(b);
+});
+
+const rv = $('#revchips');
+Kin.reverseTable.slice(0, 28).forEach(([name, path]) => {
+  const b = document.createElement('button');
+  b.textContent = name;
+  b.onclick = () => { byText(path); $('#q').value = path; };
+  rv.appendChild(b);
+});
+
+/* 地区按钮 */
+const rg = $('#regions');
+Object.keys(REGIONS).forEach(name => {
+  const b = document.createElement('button');
+  b.textContent = name;
+  b.className = (name === region) ? 'on' : '';
+  b.onclick = () => {
+    region = name;
+    try { localStorage.setItem('kin_region', name); } catch (e) {}
+    Array.from(rg.children).forEach(x => x.classList.toggle('on', x.textContent === name));
+    if (lastResult) show(lastResult, lastText);
+    if (quizCur) {
+      const nodes = document.querySelectorAll('#qOpts button');
+      nodes.forEach(n => { if (!n.disabled) n.textContent = localize(n.dataset.k); });
+    }
+  };
+  rg.appendChild(b);
+});
+
+$('#mQuery').onclick = () => setMode('query');
+$('#mQuiz').onclick = () => setMode('quiz');
+$('#qNext').onclick = renderQuiz;
+
+renderRecent();
+render();
+$('#qScore').textContent = '答对 ' + quizScore.right + ' / ' + quizScore.total;
+</script>
+</body>
+</html>
